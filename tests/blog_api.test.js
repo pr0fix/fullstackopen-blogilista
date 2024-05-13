@@ -66,6 +66,22 @@ test.only("a valid blog can be added", async () => {
   assert(contents.includes("anotherTestTitle"));
 });
 
+test.only("if there are no likes, likes should be zero", async () => {
+  const newBlog = {
+    title: "emptyLikesTest",
+    author: "emptyLikesTest",
+    url: "emptyLikesTest",
+  };
+
+  const res = await api
+    .post("/api/blogs")
+    .send(newBlog)
+    .expect(201)
+    .expect("Content-Type", /application\/json/);
+
+  assert.strictEqual(res.body.likes, 0)
+});
+
 after(async () => {
   await mongoose.connection.close();
 });

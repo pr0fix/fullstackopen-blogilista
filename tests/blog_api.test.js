@@ -16,7 +16,20 @@ test.only("blogs are returned as json", async () => {
 test.only("there are two blogs", async () => {
   const res = await api.get("/api/blogs");
 
-  assert.strictEqual(res.body.length, 2)
+  assert.strictEqual(res.body.length, 2);
+});
+
+test.only("blog id is in a valid form", async () => {
+  const res = await api.get("/api/blogs");
+
+  assert.strictEqual(res.status, 200);
+
+  assert(Array.isArray(res.body));
+
+  res.body.forEach((blog) => {
+    assert(blog.id !== undefined);
+    assert(blog._id === undefined);
+  });
 });
 
 after(async () => {

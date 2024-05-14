@@ -20,14 +20,21 @@ describe("when there is initially some blogs saved", () => {
       .expect("Content-Type", /application\/json/);
   });
 
-  test("there are two blogs", async () => {
+  test("all blogs are returned", async () => {
     const res = await api.get("/api/blogs");
     assert.strictEqual(res.body.length, helper.initialBlogs.length);
+  });
+
+  test("a specific blog is within the returned blogs", async () => {
+    const res = await api.get("/api/blogs");
+
+    const titles = res.body.map((r) => r.title);
+    assert(titles.includes("title"));
   });
 });
 
 describe("viewing a specific blog", () => {
-  test("blog id is in a valid form", async () => {
+  test("succeeds with a valid id", async () => {
     const res = await api.get("/api/blogs");
 
     assert.strictEqual(res.status, 200);
@@ -38,6 +45,12 @@ describe("viewing a specific blog", () => {
       assert(blog.id !== undefined);
       assert(blog._id === undefined);
     });
+  });
+
+  test("fails with statuscode 404 if blog doesn't exist", async () => {
+    const validNonexistingId = await helper.nonExistingId();
+
+    await api.get(`/api/blogs/${validNonexistingId}`).expect(404);
   });
 });
 
@@ -105,6 +118,44 @@ describe("addition of a new blog", async () => {
       .send(newBlog)
       .expect(400)
       .expect("Content-Type", /application\/json/);
+  });
+});
+
+describe("updation of a blog", async () => {
+  test("succeeds with a status code of 200 if id is valid", async () => {
+    const blogsAtStart = await helper.blogsInDB();
+    const blogToUpdate = blogsAtStart[1];
+
+    const updatedData = {
+      likes: 5,
+    };
+
+    await api
+      .put(`/api/blogs/${blogToUpdate.id}`)
+      .send(updatedData)
+      .expect(200);
+
+    const blogsAtEnd = await helper.blogsInDB();
+
+    const updatedBlog = blogsAtEnd.find((blog) => blog.id === blogToUpdate.id);
+    assert.strictEqual(updatedBlog.likes, 5);
+  });
+
+  test("fails with a status code of 400 if id is invalid", async () => {
+    const blogsAtStart = await helper.blogsInDB();
+    const blogToUpdate = blogsAtStart[1];
+    const invalidId = "123123";
+
+    const updatedData = {
+      likes: 5,
+    };
+
+    await api.put(`/api/blogs/${invalidId}`).send(updatedData).expect(400);
+
+    const blogsAtEnd = await helper.blogsInDB();
+    const updatedBlog = blogsAtEnd.find((blog) => blog.id === blogToUpdate.id);
+
+    assert.strictEqual(updatedBlog.likes, blogToUpdate.likes);
   });
 });
 

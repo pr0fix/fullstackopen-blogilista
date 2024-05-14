@@ -37,6 +37,10 @@ blogsRouter.post("/", async (request, response) => {
 
   const user = await User.findById(body.userId);
 
+  if (!user) {
+    return response.status(400).json({error: "User not found"})
+  }
+
   const blog = new Blog({
     title: body.title,
     author: body.author,

@@ -6,9 +6,24 @@ const userSchema = mongoose.Schema(
       type: String,
       required: true,
       unique: true,
+      validate: {
+        validator: function (v) {
+          return v && v.length >= 3;
+        },
+        message: "Username must be at least 3 characters long",
+      },
     },
     name: String,
-    passwordHash: String,
+    passwordHash: {
+      type: String,
+      required: true,
+      validate: {
+        validator: function (v) {
+          return v && v.length >= 3;
+        },
+        message: "Password must be at least 3 characters long",
+      },
+    },
     blogs: [
       {
         type: mongoose.Schema.Types.ObjectId,

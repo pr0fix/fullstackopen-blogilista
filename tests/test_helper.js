@@ -7,12 +7,14 @@ const initialBlogs = [
     author: "author",
     url: "url",
     likes: "1",
+    userId: "66438e39e805218e029d019f",
   },
   {
     title: "testTitle",
     author: "testAuthor",
     url: "testUrl",
     likes: "400",
+    userId: "66438e39e805218e029d019f"
   },
 ];
 
@@ -22,6 +24,7 @@ const nonExistingId = async () => {
     author: "willremovethissoon",
     url: "willremovethissoon",
     likes: "1",
+    userId: "66438fedd55740145bf572f3",
   });
   await blog.save();
   await blog.deleteOne();

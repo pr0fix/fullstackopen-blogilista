@@ -79,7 +79,33 @@ test.only("if there are no likes, likes should be zero", async () => {
     .expect(201)
     .expect("Content-Type", /application\/json/);
 
-  assert.strictEqual(res.body.likes, 0)
+  assert.strictEqual(res.body.likes, 0);
+});
+
+test.only("post request with no title returns http-status 400", async () => {
+  const newBlog = {
+    author: "noTitleTest",
+    url: "noTitleTest",
+  };
+
+  await api
+    .post("/api/blogs")
+    .send(newBlog)
+    .expect(400)
+    .expect("Content-Type", /application\/json/);
+});
+
+test.only("post request with no url returns http-status 400", async () => {
+  const newBlog = {
+    title: "noUrlTest",
+    author: "noUrlTest",
+  };
+
+  await api
+    .post("/api/blogs")
+    .send(newBlog)
+    .expect(400)
+    .expect("Content-Type", /application\/json/);
 });
 
 after(async () => {

@@ -24,13 +24,24 @@ const errorHandler = (err, request, response, next) => {
   } else if (err.name === "JsonWebTokenError") {
     return response.status(400).json({ error: "token missing or invalid" });
   } else if (err.name === "TokenExpiredError") {
-    return response.status(401).json({error: "token expired",});
+    return response.status(401).json({ error: "token expired" });
   }
   next(err);
+};
+
+const tokenExtractor = (request, response, next) => {
+  const authorization = request.get("authorization");
+  if (authorization && authorization.startsWith("Bearer ")) {
+    request.token = authorization.replace("Bearer ", "");
+  } else {
+    request.token = null;
+  }
+  next();
 };
 
 module.exports = {
   requestLogger,
   unknownEndpoint,
   errorHandler,
+  tokenExtractor,
 };

@@ -1,9 +1,9 @@
-PUT http://localhost:3003/api/blogs/664310d75e29053c7e7a2b31
+PUT http://localhost:3003/api/blogs/aasd
 Content-Type: application/json
 
 {
   "title": "title",
   "author": "author",
   "url": "url",
-  "likes": "3"
+  "likes": "6"
 }

@@ -1,5 +1,7 @@
 const Blog = require("../models/blog");
 const User = require("../models/user");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
 
 const initialBlogs = [
   {
@@ -14,7 +16,7 @@ const initialBlogs = [
     author: "testAuthor",
     url: "testUrl",
     likes: "400",
-    userId: "66438e39e805218e029d019f"
+    userId: "66438e39e805218e029d019f",
   },
 ];
 
@@ -42,9 +44,33 @@ const usersInDB = async () => {
   return users.map((user) => user.toJSON());
 };
 
+const createTestUser = async () => {
+  const passwordHash = await bcrypt.hash("testUser", 10);
+
+  const user = new User({
+    username: "testUser",
+    passwordHash,
+  });
+
+  await user.save();
+  return user;
+};
+
+const createTestToken = async (user) => {
+    const payload = {
+      username: user.username,
+      id: user.id,
+    };
+
+    const token = jwt.sign(payload, process.env.SECRET);
+    return token;
+};
+
 module.exports = {
   initialBlogs,
   nonExistingId,
   blogsInDB,
   usersInDB,
+  createTestToken,
+  createTestUser,
 };

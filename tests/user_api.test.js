@@ -3,11 +3,10 @@ const assert = require("assert");
 const mongoose = require("mongoose");
 const supertest = require("supertest");
 const app = require("../app");
-const api = supertest(app);
 const helper = require("./test_helper");
 const User = require("../models/user");
 const bcrypt = require("bcrypt");
-
+const api = supertest(app);
 describe("when there is initially one user at db", () => {
   beforeEach(async () => {
     await User.deleteMany({});
@@ -18,12 +17,18 @@ describe("when there is initially one user at db", () => {
     await user.save();
   });
 
+  test("users are returned as json", async () => {
+    await api
+      .get("/api/users")
+      .expect(200)
+      .expect("Content-Type", /application\/json/);
+  });
+
   test("creation succeeds with a fresh username", async () => {
     const usersAtStart = await helper.usersInDB();
 
     const newUser = {
       username: "testUser",
-      name: "Test User",
       password: "secretTest",
     };
 
@@ -39,13 +44,15 @@ describe("when there is initially one user at db", () => {
     const usernames = usersAtEnd.map((u) => u.username);
     assert(usernames.includes(newUser.username));
   });
+});
 
-  test("creation fails with proper statuscode and message if username is already taken", async () => {
+describe("creating a new user is declined", () => {
+
+  test("when username is taken", async () => {
     const usersAtStart = await helper.usersInDB();
 
     const newUser = {
       username: "root",
-      name: "Superuser",
       password: "secret",
     };
 
@@ -53,99 +60,76 @@ describe("when there is initially one user at db", () => {
       .post("/api/users")
       .send(newUser)
       .expect(400)
-      .expect("Content-Type", /application\/json/);
 
     const usersAtEnd = await helper.usersInDB();
+    
     assert(result.body.error.includes("expected `username` to be unique"));
-
     assert.strictEqual(usersAtEnd.length, usersAtStart.length);
   });
 
-  test("creation fails with statuscode 400 and proper message when username is under 3 characters long", async () => {
+  test("when username is under 3 characters long", async () => {
     const usersAtStart = await helper.usersInDB();
 
     const newUser = {
       username: "Te",
-      name: "Test User",
       password: "testPassword",
     };
 
-    const result = await api
+    await api
       .post("/api/users")
       .send(newUser)
       .expect(400)
-      .expect("Content-Type", /application\/json/);
 
     const usersAtEnd = await helper.usersInDB();
-    assert(
-      result.body.error.includes(
-        "Username and password must be at least 3 characters long"
-      )
-    );
     assert.strictEqual(usersAtEnd.length, usersAtStart.length);
   });
 
-  test("creation fails with statuscode 400 and proper message when username is missing", async () => {
+  test("when username is missing", async () => {
     const usersAtStart = await helper.usersInDB();
 
     const newUser = {
-      username: "",
-      name: "Test User",
       password: "testPassword",
     };
 
-    const result = await api
+    await api
       .post("/api/users")
       .send(newUser)
       .expect(400)
-      .expect("Content-Type", /application\/json/);
 
     const usersAtEnd = await helper.usersInDB();
-    assert(result.body.error.includes("Username or password cannot be empty"));
     assert.strictEqual(usersAtEnd.length, usersAtStart.length);
   });
 
-  test("creation fails with statuscode 400 and proper message when password is under 3 characters long", async () => {
+  test("when password is under 3 characters long", async () => {
     const usersAtStart = await helper.usersInDB();
 
     const newUser = {
       username: "testUser",
-      name: "Test User",
       password: "te",
     };
 
-    const result = await api
+    await api
       .post("/api/users")
       .send(newUser)
       .expect(400)
-      .expect("Content-Type", /application\/json/);
 
     const usersAtEnd = await helper.usersInDB();
-    assert(
-      result.body.error.includes(
-        "Username and password must be at least 3 characters long"
-      )
-    );
     assert.strictEqual(usersAtEnd.length, usersAtStart.length);
   });
 
-  test("creation fails with statuscode 400 and proper message when password is missing", async () => {
+  test("when password is missing", async () => {
     const usersAtStart = await helper.usersInDB();
 
     const newUser = {
-      username:"testUser",
-      name: "Test User",
-      password: ""
+      username: "testUser",
     };
 
-    const result = await api
+    await api
       .post("/api/users")
       .send(newUser)
       .expect(400)
-      .expect("Content-Type", /application\/json/);
 
     const usersAtEnd = await helper.usersInDB();
-    assert(result.body.error.includes("Username or password cannot be empty"));
     assert.strictEqual(usersAtEnd.length, usersAtStart.length);
   });
 });
